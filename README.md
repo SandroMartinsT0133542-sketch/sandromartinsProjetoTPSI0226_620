@@ -94,6 +94,37 @@ Develop a complete management system with CLI interface and persistent data stor
 		`-- progress_entry.py
 ```
 
+## Module Responsibility Map
+
+- [src/main.py](src/main.py): Application entry point and startup handoff to CLI.
+- [src/cli/app.py](src/cli/app.py): User interaction flow (menu, prompts, and operation handlers).
+- [src/services/progress_service.py](src/services/progress_service.py): Core business operations (CRUD, search, sorting, statistics, filtering).
+- [src/models/progress_entry.py](src/models/progress_entry.py): Record dictionary shape helpers (build/parse/serialize).
+- [src/algorithms/searching.py](src/algorithms/searching.py): Manual search algorithms (linear and binary).
+- [src/algorithms/sorting.py](src/algorithms/sorting.py): Manual sorting algorithms (bubble and insertion).
+- [src/utils/validators.py](src/utils/validators.py): Input validation helpers (regex and numeric constraints).
+- [src/data/storage.py](src/data/storage.py): JSON persistence functions (load and save).
+
+- [src/**init**.py](src/__init__.py): Top-level package marker and scope description.
+- [src/cli/**init**.py](src/cli/__init__.py): CLI package intent and export surface.
+- [src/services/**init**.py](src/services/__init__.py): Services package intent and export surface.
+- [src/models/**init**.py](src/models/__init__.py): Models package intent and export surface.
+- [src/algorithms/**init**.py](src/algorithms/__init__.py): Algorithms package intent and export surface.
+- [src/utils/**init**.py](src/utils/__init__.py): Utilities package intent and export surface.
+- [src/data/**init**.py](src/data/__init__.py): Data package intent and export surface.
+
 ## Next Step
 
 Start implementing modules one by one, beginning with input validation and JSON persistence.
+
+## Environment Setup
+
+1. Create and use the virtual environment:
+
+- Windows PowerShell: `.venv\Scripts\Activate.ps1`
+
+2. Install dependencies (currently placeholder list):
+
+- `pip install -r requirements.txt`
+
+3. Add new packages to `requirements.txt` as implementation begins.
