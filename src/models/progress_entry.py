@@ -8,6 +8,7 @@ Record = dict[str, Any]
 
 def build_progress_entry(
 	record_id: int,
+	user_id: int,
 	client_name: str,
 	email: str,
 	phone: str,
@@ -21,6 +22,7 @@ def build_progress_entry(
 	"""Build and return a normalized record dictionary."""
 	return {
 		"record_id": int(record_id),
+		"user_id": int(user_id),
 		"client_name": str(client_name),
 		"email": str(email),
 		"phone": str(phone),
@@ -37,6 +39,7 @@ def parse_progress_entry(raw: dict[str, Any]) -> Record:
 	"""Normalize/coerce raw persisted data into expected record structure."""
 	return build_progress_entry(
 		record_id=raw.get("record_id", 0),
+		user_id=raw.get("user_id", 0),
 		client_name=raw.get("client_name", ""),
 		email=raw.get("email", ""),
 		phone=raw.get("phone", ""),

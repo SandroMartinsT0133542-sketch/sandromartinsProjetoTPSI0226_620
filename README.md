@@ -1,130 +1,135 @@
-# Fitness Management System (CLI + JSON)
+# Fitness Management System (GUI + JSON)
 
-School project for a Python management system focused on fitness tracking.
+Python school project for managing fitness progress records through a small Tkinter interface with JSON persistence.
 
-Current status: planning and project structure only.
+Default login: `admin` / `Admin@2026`
 
-## Goal
+You can also create a new account from the GUI or the fallback CLI before signing in.
 
-Develop a complete management system with CLI interface and persistent data storage (JSON), aligned with assignment grading criteria.
+## Current Features
 
-## Development Decision
+- Create, list, search, update, and delete records.
+- Manual search algorithms: linear and binary.
+- Manual sorting algorithms: bubble and insertion.
+- Statistics: count, averages, min/max, and total calories.
+- Weight-range filtering.
+- Regex and numeric validation for user input.
+- Sign up and sign in with a second JSON file for users.
+- Login system backed by a second JSON file.
+- Save on demand and save prompt on exit.
+- Sample-data loader for quick demo/testing.
+- Small GUI for day-to-day use.
 
-- Procedural and modular approach (no class-based architecture for now).
-- Keep files as placeholders during this phase.
-- No implementation code in this stage; only structure and planning.
+## Project Structure
 
-## Functional Requirements To Cover
+- [src/main.py](src/main.py): application entry point.
+- [src/gui/app.py](src/gui/app.py): Tkinter interface.
+- [src/cli/app.py](src/cli/app.py): interactive menu and prompts.
+- [src/services/auth_service.py](src/services/auth_service.py): JSON-backed login handling.
+- [src/services/progress_service.py](src/services/progress_service.py): CRUD, search, sorting, statistics, filtering, and sample records.
+- [src/data/storage.py](src/data/storage.py): JSON storage setup and persistence.
+- [src/models/progress_entry.py](src/models/progress_entry.py): record normalization helpers.
+- [src/algorithms/searching.py](src/algorithms/searching.py): manual search algorithms.
+- [src/algorithms/sorting.py](src/algorithms/sorting.py): manual sorting algorithms.
+- [src/utils/validators.py](src/utils/validators.py): validation helpers.
 
-1. Data registration:
+## How To Run
 
-- Create new records with at least 5 attributes.
-- Auto-generate unique ID.
+1. Activate the virtual environment.
 
-2. Query and search:
-
-- List all records.
-- Search by ID, name, and other relevant fields.
-- Use at least 2 search algorithms (for example linear and binary search).
-
-3. Update:
-
-- Edit existing records with validation.
-
-4. Delete:
-
-- Remove records with user confirmation.
-
-5. Sorting:
-
-- Implement at least 2 manual sorting algorithms.
-- Allow sorting by selected field and ascending/descending order.
-
-6. Statistics and processing:
-
-- Averages/totals/counts.
-- Min/max values.
-- Filters by threshold/range.
-
-## Validation Requirements (Regex)
-
-- Validate at least 3 data types (for example email, phone, password, date).
-- Block invalid input.
-- Show clear and specific error messages.
-
-## Persistence Requirements
-
-- JSON storage.
-- Load on startup.
-- Save on demand.
-- Save on program exit with S/N confirmation.
-
-## Technical Requirements
-
-- Modularization using multiple files.
-- Exception handling with try/except.
-
-## Project Structure (Placeholder Only)
-
-```
-.
-|-- README.md
-|-- data/
-|   `-- progress_records.json
-`-- src/
-	|-- main.py
-	|-- cli/
-	|   |-- __init__.py
-	|   `-- app.py
-	|-- services/
-	|   |-- __init__.py
-	|   `-- progress_service.py
-	|-- algorithms/
-	|   |-- __init__.py
-	|   |-- searching.py
-	|   `-- sorting.py
-	|-- utils/
-	|   |-- __init__.py
-	|   `-- validators.py
-	|-- data/
-	|   |-- __init__.py
-	|   `-- storage.py
-	`-- models/
-		|-- __init__.py
-		`-- progress_entry.py
+```powershell
+.venv\Scripts\Activate.ps1
 ```
 
-## Module Responsibility Map
+2. Start the application.
 
-- [src/main.py](src/main.py): Application entry point and startup handoff to CLI.
-- [src/cli/app.py](src/cli/app.py): User interaction flow (menu, prompts, and operation handlers).
-- [src/services/progress_service.py](src/services/progress_service.py): Core business operations (CRUD, search, sorting, statistics, filtering).
-- [src/models/progress_entry.py](src/models/progress_entry.py): Record dictionary shape helpers (build/parse/serialize).
-- [src/algorithms/searching.py](src/algorithms/searching.py): Manual search algorithms (linear and binary).
-- [src/algorithms/sorting.py](src/algorithms/sorting.py): Manual sorting algorithms (bubble and insertion).
-- [src/utils/validators.py](src/utils/validators.py): Input validation helpers (regex and numeric constraints).
-- [src/data/storage.py](src/data/storage.py): JSON persistence functions (load and save).
+```powershell
+python src/main.py
+```
 
-- [src/**init**.py](src/__init__.py): Top-level package marker and scope description.
-- [src/cli/**init**.py](src/cli/__init__.py): CLI package intent and export surface.
-- [src/services/**init**.py](src/services/__init__.py): Services package intent and export surface.
-- [src/models/**init**.py](src/models/__init__.py): Models package intent and export surface.
-- [src/algorithms/**init**.py](src/algorithms/__init__.py): Algorithms package intent and export surface.
-- [src/utils/**init**.py](src/utils/__init__.py): Utilities package intent and export surface.
-- [src/data/**init**.py](src/data/__init__.py): Data package intent and export surface.
+The GUI opens by default. If Tkinter cannot start in your environment, the app falls back to the CLI.
 
-## Next Step
+## Demo Data
 
-Start implementing modules one by one, beginning with input validation and JSON persistence.
+Use menu option `10` in the CLI to load three sample records into the JSON store and save them immediately. This is useful for fast smoke tests and grading demos.
 
-## Environment Setup
+## Persistence
 
-1. Create and use the virtual environment:
+- Database file: `data/progress_records.json`
+- User file: `data/users.json`
+- Records are loaded at startup.
+- Changes can be saved from the menu.
+- Exiting asks whether to save before closing.
 
-- Windows PowerShell: `.venv\Scripts\Activate.ps1`
+## Requirements Checklist
 
-2. Install dependencies (currently placeholder list):
+### Main Entity
 
-- `pip install -r requirements.txt`
+- [done] Use one main fitness entity with 5+ attributes.
+- [done] Generate a unique ID automatically for each new record.
 
-3. Add new packages to `requirements.txt` as implementation begins.
+### CRUD Flow
+
+- [done] Create new records from the CLI.
+- [done] List all stored records.
+- [done] Search records by multiple fields.
+- [done] Update existing records with validation.
+- [done] Delete records with confirmation.
+
+### Search and Sorting
+
+- [done] Implement linear search manually.
+- [done] Implement binary search manually.
+- [done] Implement bubble sort manually.
+- [done] Implement insertion sort manually.
+- [done] Allow sorting by selected field.
+- [done] Allow ascending and descending order.
+
+### Statistics and Filters
+
+- [done] Show record count.
+- [done] Show average weight.
+- [done] Show average body fat.
+- [done] Show minimum and maximum weight.
+- [done] Show total calories.
+- [done] Filter records by weight range.
+
+### Validation
+
+- [done] Validate email format with regex.
+- [done] Validate phone format with regex.
+- [done] Validate date format with regex.
+- [done] Validate password strength with regex.
+- [done] Validate numeric fields with range checks.
+- [done] Show specific error messages for invalid input.
+
+### Persistence
+
+- [done] Persist data in JSON.
+- [done] Support sign up and sign in.
+- [done] Store users in a second JSON file.
+- [done] Load records at startup.
+- [done] Save records on demand.
+- [done] Prompt to save before exiting.
+- [done] Handle database read/write errors safely.
+
+### Architecture and Code Quality
+
+- [done] Split the project into multiple modules.
+- [done] Keep CLI logic separate from service logic.
+- [done] Keep search and sort algorithms in dedicated modules.
+- [done] Use try/except around persistence boundaries.
+- [done] Keep helper functions small and single-purpose.
+
+### Demo and Usability
+
+- [done] Provide a sample-data loader for quick demos.
+- [done] Make the app runnable from the main entry point.
+- [done] Keep the README aligned with the current implementation.
+
+### Still Open
+
+- [TODO] Add automated tests for CRUD, search, sorting, and validation flows.
+- [TODO] Add a database reset option for quick clean demos.
+- [TODO] Improve output formatting for long notes and wider terminal screens.
+- [TODO] Add import/export support if the assignment later requires file exchange.

@@ -1,0 +1,28 @@
+[
+  {
+    "username": "admin",
+    "display_name": "Administrator",
+    "password_hash": "a36aef5a11c4073fbe60314fc9df530a9d5f986533594d1f5190742ff9e0e408"
+  },
+  {
+    "username": "sandro",
+    "display_name": "asa",
+    "password_hash": "5cf93e609f966d2faeb72741e2e1d31a65a6cb8b707b887d41d6b81101a67bde"
+  },
+  {
+    "user_id": 1,
+    "username": "testuser",
+    "display_name": "Test User",
+    "email": "test@example.com",
+    "phone": "+1234567890",
+    "password_hash": "b0c3a3ca23bfe7e3c3faaf153f9f83e327a589ad1eb1fc9e089cdb22fae201b9"
+  },
+  {
+    "user_id": 2,
+    "username": "sm",
+    "display_name": "sm",
+    "email": "Abc123!!!!",
+    "phone": "sandro.martins@coisas.ot",
+    "password_hash": "eeb871c603a29df77c3a183c42b42b06d8d2fd7b51d7a950304084245e89a2c7"
+  }
+]
