@@ -14,31 +14,33 @@ from services.auth_service import current_user_id
 Record = dict[str, Any]
 
 
-
-db = Path(__file__).resolve().parents[2] / "data" / "progress_records.json"
-records: list[Record] = []
-initialized = False
+progress_state: dict[str, Any] = {
+	"db": Path(__file__).resolve().parents[2] / "data" / "progress_records.json",
+	"records": [],
+	"initialized": False,
+}
 
 
 def initialize_service(db_path: Path | None = None) -> None:
 	"""Prepare JSON storage and load records into memory once."""
-	global db, records, initialized
 	if db_path is not None:
-		db = db_path
+		progress_state["db"] = db_path
+	db: Path = progress_state["db"]
 	initialize_database(db)
-	records[:] = [parse_progress_entry(record) for record in load_records(db)]
-	initialized = True
+	progress_state["records"] = [parse_progress_entry(record) for record in load_records(db)]
+	progress_state["initialized"] = True
 
 
 def ensure_initialized() -> None:
 	"""Lazy-load data if the service was not initialized by the CLI yet."""
-	if not initialized:
+	if not progress_state["initialized"]:
 		initialize_service()
 
 
 def list_records() -> list[Record]:
 	"""Return all records for the current user."""
 	ensure_initialized()
+	records: list[Record] = progress_state["records"]
 	user_id = current_user_id() or 0
 	return [record.copy() for record in records if record.get("user_id") == user_id]
 
@@ -46,6 +48,7 @@ def list_records() -> list[Record]:
 def list_records_by_user(user_id: int | str) -> list[Record]:
 	"""Return all records for a specific user by ID."""
 	ensure_initialized()
+	records: list[Record] = progress_state["records"]
 	user_id_val = int(user_id) if isinstance(user_id, str) else user_id
 	return [record.copy() for record in records if record.get("user_id") == user_id_val]
 
@@ -53,6 +56,7 @@ def list_records_by_user(user_id: int | str) -> list[Record]:
 def create_record(payload: dict[str, Any]) -> Record:
 	"""Create a new record with an auto-generated unique ID for the current user."""
 	ensure_initialized()
+	records: list[Record] = progress_state["records"]
 	record_id = max((int(record["record_id"]) for record in records), default=0) + 1
 	user_id = payload.get("user_id", current_user_id() or 0)
 	record = build_progress_entry(
@@ -84,6 +88,7 @@ def find_by_id(record_id: int) -> Record | None:
 def update_record(record_id: int, updates: dict[str, Any]) -> bool:
 	"""Update one record by ID with validated field changes."""
 	ensure_initialized()
+	records: list[Record] = progress_state["records"]
 	for index, record in enumerate(records):
 		if record["record_id"] != record_id:
 			continue
@@ -98,6 +103,7 @@ def update_record(record_id: int, updates: dict[str, Any]) -> bool:
 def delete_record(record_id: int) -> bool:
 	"""Remove one record by ID and report success/failure."""
 	ensure_initialized()
+	records: list[Record] = progress_state["records"]
 	for index, record in enumerate(records):
 		if record["record_id"] == record_id:
 			del records[index]
@@ -163,4 +169,6 @@ def filter_weight_range(minimum: float, maximum: float) -> list[Record]:
 def save_state() -> bool:
 	"""Persist the current in-memory records to JSON."""
 	ensure_initialized()
+	db: Path = progress_state["db"]
+	records: list[Record] = progress_state["records"]
 	return save_records(db, [serialize_progress_entry(record) for record in records])
