@@ -55,7 +55,7 @@ def should_swap(
 	return left < right if descending else left > right
 
 
-def bubble_sort(records: list[dict], field: str, descending: bool = False) -> list[dict]:
+def bubble_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records with bubble sort by selected field and order.
 	
 	**Time Complexity:** O(n²) average/worst case, O(n) best case (already sorted)
@@ -101,7 +101,7 @@ def bubble_sort(records: list[dict], field: str, descending: bool = False) -> li
 	return ordered
 
 
-def insertion_sort(records: list[dict], field: str, descending: bool = False) -> list[dict]:
+def insertion_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records with insertion sort by selected field and order.
 	
 	**Time Complexity:** O(n²) average/worst case, O(n) best case (already sorted)
@@ -149,7 +149,7 @@ def insertion_sort(records: list[dict], field: str, descending: bool = False) ->
 	return ordered
 
 
-def quick_sort(records: list[dict], field: str, descending: bool = False) -> list[dict]:
+def quick_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records with quick sort by selected field and order.
 	
 	**Time Complexity:** O(n log n) average case, O(n²) worst case (sorted input)
@@ -171,7 +171,7 @@ def quick_sort(records: list[dict], field: str, descending: bool = False) -> lis
 	"""
 	ordered = [record.copy() for record in records]
 	
-	def _partition(arr: list[dict], low: int, high: int) -> int:
+	def _partition(arr: list[dict[str, Any]], low: int, high: int) -> int:
 		"""Partition around pivot using median-of-three for better performance."""
 		if high - low > 2:
 			# Median-of-three pivot selection
@@ -205,7 +205,7 @@ def quick_sort(records: list[dict], field: str, descending: bool = False) -> lis
 		arr[i], arr[high] = arr[high], arr[i]
 		return i
 	
-	def _quick_sort_impl(arr: list[dict], low: int, high: int) -> None:
+	def _quick_sort_impl(arr: list[dict[str, Any]], low: int, high: int) -> None:
 		"""Recursive quick sort implementation."""
 		if low < high:
 			partition_idx = _partition(arr, low, high)
@@ -218,7 +218,7 @@ def quick_sort(records: list[dict], field: str, descending: bool = False) -> lis
 	return ordered
 
 
-def merge_sort(records: list[dict], field: str, descending: bool = False) -> list[dict]:
+def merge_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records with merge sort by selected field and order.
 	
 	**Time Complexity:** O(n log n) guaranteed in all cases
@@ -240,9 +240,9 @@ def merge_sort(records: list[dict], field: str, descending: bool = False) -> lis
 	"""
 	ordered = [record.copy() for record in records]
 	
-	def _merge(left: list[dict], right: list[dict]) -> list[dict]:
+	def _merge(left: list[dict[str, Any]], right: list[dict[str, Any]]) -> list[dict[str, Any]]:
 		"""Merge two sorted lists into one."""
-		result: list[dict] = []
+		result: list[dict[str, Any]] = []
 		i = j = 0
 		
 		while i < len(left) and j < len(right):
@@ -261,7 +261,7 @@ def merge_sort(records: list[dict], field: str, descending: bool = False) -> lis
 		result.extend(right[j:])
 		return result
 	
-	def _merge_sort_impl(arr: list[dict]) -> list[dict]:
+	def _merge_sort_impl(arr: list[dict[str, Any]]) -> list[dict[str, Any]]:
 		"""Recursive merge sort implementation."""
 		if len(arr) <= 1:
 			return arr

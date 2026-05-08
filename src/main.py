@@ -5,9 +5,6 @@ graphical toolkit is unavailable (for example in headless environments or
 when the optional `tkinter` package is not installed).
 """
 
-from typing import NoReturn
-
-
 def main() -> None:
 	"""Start the GUI, with CLI fallback for headless environments.
 
