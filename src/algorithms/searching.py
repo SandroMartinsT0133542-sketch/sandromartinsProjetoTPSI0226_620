@@ -43,7 +43,7 @@ def search_key(value: object) -> tuple[int, float | str]:
 
 
 
-def linear_search(records: list[dict], field: str, target: object) -> list[dict]:
+def linear_search(records: list[dict[str, Any]], field: str, target: object) -> list[dict[str, Any]]:
 	"""Scan all records sequentially and return exact matches.
 	
 	**Time Complexity:** O(n) where n is the number of records
@@ -83,7 +83,7 @@ def linear_search(records: list[dict], field: str, target: object) -> list[dict]
 	return matches
 
 
-def binary_search(records: list[dict], field: str, target: object) -> list[dict]:
+def binary_search(records: list[dict[str, Any]], field: str, target: object) -> list[dict[str, Any]]:
 	"""Search in a field-sorted list and return all matching records.
 	
 	**Time Complexity:** O(log n + m) where n is number of records, m is matches
