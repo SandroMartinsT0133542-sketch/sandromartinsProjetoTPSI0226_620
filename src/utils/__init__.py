@@ -9,7 +9,10 @@ from .validators import (
 	validate_number,
 )
 
+from .users import generate_user, hash_password
 __all__ = [
+	"hash_password",
+  "generate_user",
 	"validate_non_empty",
 	"validate_email",
 	"validate_phone",
