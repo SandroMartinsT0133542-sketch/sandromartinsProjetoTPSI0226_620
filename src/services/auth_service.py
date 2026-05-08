@@ -1,11 +1,11 @@
 """Authentication helpers backed by a small JSON user store."""
 
-from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 from data.storage import initialize_database, load_records, save_records
-
+from src.utils.users import hash_password
+from utils import generate_user
 
 Record = dict[str, Any]
 
@@ -16,11 +16,6 @@ auth_state: dict[str, Any] = {
 	"current_username": None,
 	"current_user_id": None,
 }
-
-
-def hash_password(password: str) -> str:
-	return sha256(password.encode("utf-8")).hexdigest()
-
 
 def initialize_auth(db_path: Path | None = None) -> None:
 	"""Load users from JSON and create a default account if needed."""
@@ -64,32 +59,33 @@ def register_user(
 		initialize_auth()
 		users = auth_state["users"]
 
-	username = username.strip()
-	display_name = display_name.strip()
-	email = email.strip()
-	phone = phone.strip()
-	if not username or not display_name or not password:
+	user = generate_user(
+		username.strip(), 
+		display_name.strip(), 
+		email.strip(), 
+		phone.strip(), 
+		password.strip())
+
+	
+	if not user['username'] or not user['display_name'] or not user['email'] or not user['phone'] or not user['password_hash']:
 		return False, "All fields are required."
 	if not email:
 		email = f"{username}@fitness.local"
 	if not phone:
 		phone = "+351900000000"
 
-	for user in users:
-		if user.get("username") == username:
+	for existing_user in users:
+		if existing_user.get("username") == user['username']:
 			return False, "That username is already taken."
+		elif existing_user.get("email") == user['email']:
+			return False, "That email is already registered."
+		elif existing_user.get("phone") == user['phone']:
+			return False, "That phone number is already registered."
+		elif existing_user.get("display_name") == user['display_name']:
+			return False, "That display name is already taken."
+	
+	users.append(user)
 
-	next_id = max((int(user.get("user_id", 0)) for user in users), default=0) + 1
-	users.append(
-		{
-			"user_id": next_id,
-			"username": username,
-			"display_name": display_name,
-			"email": email,
-			"phone": phone,
-			"password_hash": hash_password(password),
-		}
-	)
 	if save_users():
 		return True, "Account created successfully."
 	users.pop()
