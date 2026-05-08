@@ -210,8 +210,6 @@ __marimo__/
 
 .github/*
 !.github/workflows/
-!.github/workflows/**
 !.github/scripts/
-!.github/scripts/**
 .github/scripts/__pycache__/
 .github/scripts/**/*.pyc
