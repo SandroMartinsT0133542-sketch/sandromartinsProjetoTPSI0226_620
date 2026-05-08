@@ -10,9 +10,7 @@ from data.storage import initialize_database, load_records, save_records
 from models.progress_entry import build_progress_entry, parse_progress_entry, serialize_progress_entry
 from services.auth_service import current_user_id
 
-
 Record = dict[str, Any]
-
 
 progress_state: dict[str, Any] = {
 	"db": Path(__file__).resolve().parents[2] / "data" / "progress_records.json",
@@ -53,10 +51,10 @@ def list_records_by_user(user_id: int | str) -> list[Record]:
 	return [record.copy() for record in records if record.get("user_id") == user_id_val]
 
 
-def create_record(payload: dict[str, Any]) -> Record:
+def create_record(payload: Record) -> Record:
 	"""Create a new record with an auto-generated unique ID for the current user."""
 	ensure_initialized()
-	records: list[Record] = progress_state["records"]
+	records = progress_state["records"]
 	record_id = max((int(record["record_id"]) for record in records), default=0) + 1
 	user_id = payload.get("user_id", current_user_id() or 0)
 	record = build_progress_entry(
@@ -79,13 +77,13 @@ def create_record(payload: dict[str, Any]) -> Record:
 def find_by_id(record_id: int) -> Record | None:
 	"""Find and return one record by ID, or None when not found."""
 	ensure_initialized()
-	for record in records:
+	for record in progress_state["records"]:
 		if record["record_id"] == record_id:
 			return record.copy()
 	return None
 
 
-def update_record(record_id: int, updates: dict[str, Any]) -> bool:
+def update_record(record_id: int, updates: Record) -> bool:
 	"""Update one record by ID with validated field changes."""
 	ensure_initialized()
 	records: list[Record] = progress_state["records"]
