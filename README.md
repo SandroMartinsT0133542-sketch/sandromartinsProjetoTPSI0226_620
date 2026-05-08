@@ -49,6 +49,15 @@ python src/main.py
 
 The GUI opens by default. If Tkinter cannot start in your environment, the app falls back to the CLI.
 
+## Automated PR Review
+
+- The repository now includes `.github/workflows/pr-review.yml`.
+- It runs on pull requests when they are opened, updated, reopened, or marked ready for review.
+- The workflow performs a Python syntax check, runs `unittest` discovery when a `tests/` directory exists, and applies a small heuristic review to changed files.
+- It posts one sticky bot comment on the pull request and updates that comment on later pushes to avoid spam.
+- To make this check mandatory before merge, enable branch protection in GitHub and require the `PR Review Automation / review` status check.
+- The workflow uses `PYTHONPATH=src` because the project imports modules from the `src` directory root.
+
 ## Demo Data
 
 Use menu option `10` in the CLI to load three sample records into the JSON store and save them immediately. This is useful for fast smoke tests and grading demos.

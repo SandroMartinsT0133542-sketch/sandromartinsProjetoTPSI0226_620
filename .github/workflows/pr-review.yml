@@ -1,0 +1,167 @@
+name: PR Review Automation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+      REVIEW_SUMMARY_FILE: /tmp/pr-review-summary.md
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Syntax check
+        id: syntax
+        continue-on-error: true
+        run: python -m compileall src .github/scripts
+
+      - name: Run unittest discovery when tests exist
+        id: tests
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ -d tests ] && find tests \( -name 'test*.py' -o -name '*_test.py' \) -print | grep -q .; then
+            echo "found_tests=true" >> "$GITHUB_OUTPUT"
+            status=0
+            if find tests -name 'test*.py' -print | grep -q .; then
+              python -m unittest discover -s tests -p 'test*.py' || status=$?
+            fi
+            if find tests -name '*_test.py' -print | grep -q .; then
+              python -m unittest discover -s tests -p '*_test.py' || status=$?
+            fi
+            exit "$status"
+          else
+            echo "found_tests=false" >> "$GITHUB_OUTPUT"
+            echo "No automated tests found."
+          fi
+
+      - name: Run heuristic PR review
+        id: heuristic_review
+        continue-on-error: true
+        run: |
+          python .github/scripts/pr_review.py \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --base-sha "${{ github.event.pull_request.base.sha }}" \
+            --head-sha "${{ github.event.pull_request.head.sha }}" \
+            --summary-file "$REVIEW_SUMMARY_FILE"
+
+      - name: Build sticky review comment
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "<!-- automated-pr-review -->"
+            echo "## Automated PR review"
+            echo
+            echo "### Validation"
+            if [ "${{ steps.syntax.outcome }}" = "success" ]; then
+              echo "- Syntax check: ✅ Passed"
+            else
+              echo "- Syntax check: ❌ Failed"
+            fi
+            if [ "${{ steps.tests.outputs.found_tests }}" = "true" ]; then
+              if [ "${{ steps.tests.outcome }}" = "success" ]; then
+                echo "- Tests: ✅ Passed"
+              else
+                echo "- Tests: ❌ Failed"
+              fi
+            else
+              echo "- Tests: ⚠️ No automated tests found"
+            fi
+            if [ "${{ steps.heuristic_review.outcome }}" = "success" ]; then
+              echo "- Heuristic review: ✅ No blocking findings"
+            else
+              echo "- Heuristic review: ❌ Blocking findings detected"
+            fi
+            echo
+            cat "$REVIEW_SUMMARY_FILE"
+          } > /tmp/pr-review-comment.md
+
+      - name: Upsert pull request comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- automated-pr-review -->';
+            const body = fs.readFileSync('/tmp/pr-review-comment.md', 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) =>
+              comment.user?.type === 'Bot' && comment.body?.includes(marker)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
+
+      - name: Enforce failure on blocking results
+        if: always()
+        shell: bash
+        run: |
+          syntax_status="${{ steps.syntax.outcome }}"
+          tests_status="${{ steps.tests.outcome }}"
+          tests_found="${{ steps.tests.outputs.found_tests }}"
+          review_status="${{ steps.heuristic_review.outcome }}"
+
+          if [ "$syntax_status" != "success" ]; then
+            echo "Syntax validation failed."
+            exit 1
+          fi
+
+          if [ "$tests_found" = "true" ] && [ "$tests_status" != "success" ]; then
+            echo "Automated tests failed."
+            exit 1
+          fi
+
+          if [ "$review_status" != "success" ]; then
+            echo "Heuristic review found blocking issues."
+            exit 1
+          fi
