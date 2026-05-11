@@ -1,6 +1,6 @@
 """Service layer: business logic for CRUD, search, sorting, and statistics."""
 
-from typing import Any
+from typing import cast
 
 from algorithms.searching import binary_search, linear_search
 from algorithms.sorting import bubble_sort, insertion_sort
@@ -10,9 +10,9 @@ from data.storage import initialize_database, load_records, save_records
 from models.progress_entry import build_progress_entry, parse_progress_entry, serialize_progress_entry
 from services.auth_service import current_user_id
 
-Record = dict[str, Any]
+Record = dict[str, str | int | float]
 
-progress_state: dict[str, Any] = {
+progress_state: dict[str, list[Record] | bool | Path] = {
 	"db": Path(__file__).resolve().parents[2] / "data" / "progress_records.json",
 	"records": [],
 	"initialized": False,
@@ -23,7 +23,7 @@ def initialize_service(db_path: Path | None = None) -> None:
 	"""Prepare JSON storage and load records into memory once."""
 	if db_path is not None:
 		progress_state["db"] = db_path
-	db: Path = progress_state["db"]
+	db: Path = cast(Path, progress_state["db"])
 	initialize_database(db)
 	progress_state["records"] = [parse_progress_entry(record) for record in load_records(db)]
 	progress_state["initialized"] = True
@@ -38,7 +38,7 @@ def ensure_initialized() -> None:
 def list_records() -> list[Record]:
 	"""Return all records for the current user."""
 	ensure_initialized()
-	records: list[Record] = progress_state["records"]
+	records: list[Record] = cast(list[Record], progress_state["records"])
 	user_id = current_user_id() or 0
 	return [record.copy() for record in records if record.get("user_id") == user_id]
 
@@ -46,7 +46,7 @@ def list_records() -> list[Record]:
 def list_records_by_user(user_id: int | str) -> list[Record]:
 	"""Return all records for a specific user by ID."""
 	ensure_initialized()
-	records: list[Record] = progress_state["records"]
+	records: list[Record] = cast(list[Record], progress_state["records"])
 	user_id_val = int(user_id) if isinstance(user_id, str) else user_id
 	return [record.copy() for record in records if record.get("user_id") == user_id_val]
 
@@ -54,21 +54,21 @@ def list_records_by_user(user_id: int | str) -> list[Record]:
 def create_record(payload: Record) -> Record:
 	"""Create a new record with an auto-generated unique ID for the current user."""
 	ensure_initialized()
-	records = progress_state["records"]
+	records = cast(list[Record], progress_state["records"])
 	record_id = max((int(record["record_id"]) for record in records), default=0) + 1
 	user_id = payload.get("user_id", current_user_id() or 0)
 	record = build_progress_entry(
 		record_id=record_id,
-		user_id=user_id,
-		client_name=payload["client_name"],
-		email=payload["email"],
-		phone=payload["phone"],
-		record_date=payload["record_date"],
-		weight_kg=payload["weight_kg"],
-		body_fat_pct=payload["body_fat_pct"],
-		daily_calories=payload["daily_calories"],
-		password=payload["password"],
-		notes=payload["notes"],
+		user_id= cast(int, user_id),
+		client_name=cast(str, payload["client_name"]),
+		email=cast(str, payload["email"]),
+		phone=cast(str, payload["phone"]),
+		record_date=cast(str, payload["record_date"]),
+		weight_kg=cast(float, payload["weight_kg"]),
+		body_fat_pct=cast(float, payload["body_fat_pct"]),
+		daily_calories=cast(int, payload["daily_calories"]),
+		password=cast(str, payload["password"]),
+		notes=cast(str, payload["notes"]),
 	)
 	records.append(record)
 	return record.copy()
@@ -77,7 +77,7 @@ def create_record(payload: Record) -> Record:
 def find_by_id(record_id: int) -> Record | None:
 	"""Find and return one record by ID, or None when not found."""
 	ensure_initialized()
-	for record in progress_state["records"]:
+	for record in cast(list[Record], progress_state["records"]):
 		if record["record_id"] == record_id:
 			return record.copy()
 	return None
@@ -86,7 +86,7 @@ def find_by_id(record_id: int) -> Record | None:
 def update_record(record_id: int, updates: Record) -> bool:
 	"""Update one record by ID with validated field changes."""
 	ensure_initialized()
-	records: list[Record] = progress_state["records"]
+	records: list[Record] = cast(list[Record], progress_state["records"])
 	for index, record in enumerate(records):
 		if record["record_id"] != record_id:
 			continue
@@ -101,7 +101,7 @@ def update_record(record_id: int, updates: Record) -> bool:
 def delete_record(record_id: int) -> bool:
 	"""Remove one record by ID and report success/failure."""
 	ensure_initialized()
-	records: list[Record] = progress_state["records"]
+	records: list[Record] = cast(list[Record], progress_state["records"])
 	for index, record in enumerate(records):
 		if record["record_id"] == record_id:
 			del records[index]
@@ -167,6 +167,6 @@ def filter_weight_range(minimum: float, maximum: float) -> list[Record]:
 def save_state() -> bool:
 	"""Persist the current in-memory records to JSON."""
 	ensure_initialized()
-	db: Path = progress_state["db"]
-	records: list[Record] = progress_state["records"]
+	db: Path = cast(Path, progress_state["db"])
+	records: list[Record] = cast(list[Record], progress_state["records"])
 	return save_records(db, [serialize_progress_entry(record) for record in records])

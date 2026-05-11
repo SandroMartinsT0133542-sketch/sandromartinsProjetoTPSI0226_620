@@ -1,16 +1,16 @@
 """Authentication helpers backed by a small JSON user store."""
 
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 from data.storage import initialize_database, load_records, save_records
 from src.utils.users import hash_password
 from utils import generate_user
 
-Record = dict[str, Any]
+Record = dict[str, str | int | float]
 
 
-auth_state: dict[str, Any] = {
+auth_state: dict[str, list[Record] | str | int | Path | None]  = {
 	"users_db": Path(__file__).resolve().parents[2] / "data" / "users.json",
 	"users": [],
 	"current_username": None,
@@ -21,7 +21,7 @@ def initialize_auth(db_path: Path | None = None) -> None:
 	"""Load users from JSON and create a default account if needed."""
 	if db_path is not None:
 		auth_state["users_db"] = db_path
-	users_db: Path = auth_state["users_db"]
+	users_db: Path = cast(Path, auth_state["users_db"])
 	initialize_database(users_db)
 	loaded_users = [dict(user) for user in load_records(users_db)]
 	auth_state["users"] = loaded_users
@@ -41,8 +41,8 @@ def initialize_auth(db_path: Path | None = None) -> None:
 
 def save_users() -> bool:
 	"""Persist the in-memory user list to JSON."""
-	users_db: Path = auth_state["users_db"]
-	users: list[Record] = auth_state["users"]
+	users_db: Path = cast(Path, auth_state["users_db"])
+	users: list[Record] = cast(list[Record], auth_state["users"])
 	return save_records(users_db, users)
 
 
@@ -54,10 +54,10 @@ def register_user(
 	phone: str = "",
 ) -> tuple[bool, str]:
 	"""Create a new user account unless the username already exists."""
-	users: list[Record] = auth_state["users"]
+	users: list[Record] = cast(list[Record], auth_state["users"])
 	if not users:
 		initialize_auth()
-		users = auth_state["users"]
+		users = cast(list[Record], auth_state["users"])
 
 	user = generate_user(
 		username.strip(), 
@@ -84,7 +84,7 @@ def register_user(
 		elif existing_user.get("display_name") == user['display_name']:
 			return False, "That display name is already taken."
 	
-	users.append(user)
+	users.append(cast(Record, user))
 
 	if save_users():
 		return True, "Account created successfully."
@@ -94,10 +94,10 @@ def register_user(
 
 def authenticate(username: str, password: str) -> bool:
 	"""Check credentials against the stored users and mark the current user."""
-	users: list[Record] = auth_state["users"]
+	users: list[Record] = cast(list[Record], auth_state["users"])
 	if not users:
 		initialize_auth()
-		users = auth_state["users"]
+		users = cast(list[Record], auth_state["users"])
 
 	password_hash = hash_password(password)
 	for user in users:
@@ -112,12 +112,13 @@ def authenticate(username: str, password: str) -> bool:
 
 def current_user() -> str | None:
 	"""Return the currently authenticated username, if any."""
-	return auth_state["current_username"]
+	return cast(str | None, auth_state["current_username"])
+
 
 
 def current_user_id() -> int | None:
 	"""Return the currently authenticated user ID, if any."""
-	return auth_state["current_user_id"]
+	return cast(int | None, auth_state["current_user_id"])
 
 
 def logout() -> None:
