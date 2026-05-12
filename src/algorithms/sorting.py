@@ -56,30 +56,15 @@ def should_swap(
 
 
 def bubble_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
-	"""Sort records with bubble sort by selected field and order.
-	
-	**Time Complexity:** O(n²) average/worst case, O(n) best case (already sorted)
-	**Space Complexity:** O(n) for the output list copy
-	**Best for:** Small datasets, educational purposes, or nearly sorted data
-	
-	Bubble sort repeatedly steps through the list, compares adjacent pairs, and
-	swaps them if they're in the wrong order. It has an optimization that stops
-	early if a pass makes no swaps (data is sorted).
-	
+	"""Sort records using bubble sort.
+
 	Args:
-	    records: List of dictionaries to sort
-	    field: The field name to sort by
-	    descending: If True, sort descending; otherwise ascending (default: False)
-	
+		records: List of records (dicts) to sort.
+		field: Field name to sort by.
+		descending: If True, sort in descending order.
+
 	Returns:
-	    list: Sorted list of records (original not mutated)
-	
-	Examples:
-	    >>> data = [{"name": "Bob", "age": "25"}, {"name": "Alice", "age": "30"}]
-	    >>> bubble_sort(data, "age")
-	    [{"name": "Bob", "age": "25"}, {"name": "Alice", "age": "30"}]
-	    >>> bubble_sort(data, "age", descending=True)
-	    [{"name": "Alice", "age": "30"}, {"name": "Bob", "age": "25"}]
+		A new list with records sorted by the specified field.
 	"""
 	ordered = [record.copy() for record in records]
 	total = len(ordered)
@@ -102,29 +87,15 @@ def bubble_sort(records: list[dict[str, Any]], field: str, descending: bool = Fa
 
 
 def insertion_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
-	"""Sort records with insertion sort by selected field and order.
-	
-	**Time Complexity:** O(n²) average/worst case, O(n) best case (already sorted)
-	**Space Complexity:** O(n) for the output list copy
-	**Best for:** Small datasets, nearly sorted data, or online sorting
-	**Stability:** Stable (preserves order of equal elements)
-	
-	Insertion sort builds the sorted list one item at a time, inserting each element
-	into its correct position among previously sorted elements. Efficient for small
-	datasets and better than bubble sort in practice.
-	
+	"""Sort records using insertion sort.
+
 	Args:
-	    records: List of dictionaries to sort
-	    field: The field name to sort by
-	    descending: If True, sort descending; otherwise ascending (default: False)
-	
+		records: List of records (dicts) to sort.
+		field: Field name to sort by.
+		descending: If True, sort in descending order.
+
 	Returns:
-	    list: Sorted list of records (original not mutated)
-	
-	Examples:
-	    >>> data = [{"id": "3"}, {"id": "1"}, {"id": "2"}]
-	    >>> insertion_sort(data, "id")
-	    [{"id": "1"}, {"id": "2"}, {"id": "3"}]
+		A new list with records sorted by the specified field.
 	"""
 	ordered = [record.copy() for record in records]
 	total = len(ordered)
@@ -150,24 +121,15 @@ def insertion_sort(records: list[dict[str, Any]], field: str, descending: bool =
 
 
 def quick_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
-	"""Sort records with quick sort by selected field and order.
-	
-	**Time Complexity:** O(n log n) average case, O(n²) worst case (sorted input)
-	**Space Complexity:** O(log n) average case for recursion, O(n) worst case
-	**Best for:** Large datasets, general-purpose sorting
-	**Note:** Not stable (may reorder equal elements)
-	
-	Quk sort is a divide-and-conquer algorithm that partitions the list around
-	a pivot and recursively sorts the partitions. Uses median-of-three pivot selection
-	to avoid worst-case behavior on already-sorted data.ic
-	
+	"""Sort records using quick sort.
+
 	Args:
-	    records: List of dictionaries to sort
-	    field: The field name to sort by
-	    descending: If True, sort descending; otherwise ascending (default: False)
-	
+		records: List of records (dicts) to sort.
+		field: Field name to sort by.
+		descending: If True, sort in descending order.
+
 	Returns:
-	    list: Sorted list of records (original not mutated)
+		A new list with records sorted by the specified field.
 	"""
 	ordered = [record.copy() for record in records]
 	
@@ -197,7 +159,7 @@ def quick_sort(records: list[dict[str, Any]], field: str, descending: bool = Fal
 		i = low
 		for j in range(low, high):
 			current = sort_key(arr[j], field)
-			should_left = current < pivot if descending else current > pivot
+			should_left = current < pivot if not descending else current > pivot
 			if should_left:
 				arr[i], arr[j] = arr[j], arr[i]
 				i += 1
@@ -219,24 +181,15 @@ def quick_sort(records: list[dict[str, Any]], field: str, descending: bool = Fal
 
 
 def merge_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
-	"""Sort records with merge sort by selected field and order.
-	
-	**Time Complexity:** O(n log n) guaranteed in all cases
-	**Space Complexity:** O(n) additional space for merging
-	**Best for:** Large datasets where guaranteed O(n log n) is needed
-	**Stability:** Stable (preserves order of equal elements)
-	
-	Merge sort is a divide-and-conquer algorithm that divides the list in half,
-	recursively sorts each half, and merges them. Slower than quick sort in practice
-	due to higher constant factors and memory usage, but guarantees O(n log n).
-	
+	"""Sort records using merge sort.
+
 	Args:
-	    records: List of dictionaries to sort
-	    field: The field name to sort by
-	    descending: If True, sort descending; otherwise ascending (default: False)
-	
+		records: List of records (dicts) to sort.
+		field: Field name to sort by.
+		descending: If True, sort in descending order.
+
 	Returns:
-	    list: Sorted list of records (original not mutated)
+		A new list with records sorted by the specified field.
 	"""
 	ordered = [record.copy() for record in records]
 	

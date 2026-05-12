@@ -1,4 +1,4 @@
-from tkinter import Toplevel, ttk, messagebox
+from tkinter import ttk, messagebox, Toplevel
 from typing import Any, Callable, cast
 
 from services.progress_service import create_record, save_state
@@ -8,7 +8,7 @@ from utils.validators import (
 )
 
 
-def show_add_dialog(parent: Toplevel, user_id: str, on_saved: Callable[[], None] | None = None) -> None:
+def show_add_dialog(parent: Any, user_id: str, on_saved: Callable[[], None] | None = None) -> None:
     dialog = Toplevel(parent)
     dialog.title("Add Record")
     dialog.geometry("480x560")
@@ -42,7 +42,7 @@ def show_add_dialog(parent: Toplevel, user_id: str, on_saved: Callable[[], None]
                 "body_fat_pct": float(fields["body_fat_pct"].get().strip()),
                 "daily_calories": int(fields["daily_calories"].get().strip()),
                 "notes": fields["notes"].get().strip(),
-                "user_id": int(user_id) if isinstance(user_id, int) and user_id.isdigit() else user_id,
+                "user_id": int(user_id),
             }
         except ValueError:
             messagebox.showerror("Error", "Invalid numeric values.")
