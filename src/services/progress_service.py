@@ -1,16 +1,18 @@
 """Service layer: business logic for CRUD, search, sorting, and statistics."""
 
-from typing import cast
+from json import JSONDecodeError, loads
+from typing import Any, cast
 
 from algorithms.searching import binary_search, linear_search
 from algorithms.sorting import bubble_sort, insertion_sort
 from pathlib import Path
 
-from data.storage import initialize_database, load_records, save_records
+from data.storage import initialize_database, save_records
 from models.progress_entry import build_progress_entry, parse_progress_entry, serialize_progress_entry
-from services.auth_service import current_user_id
+import services.auth_service as auth_service
 
 Record = dict[str, str | int | float]
+UserBucket = dict[str, Any]
 
 progress_state: dict[str, list[Record] | bool | Path] = {
 	"db": Path(__file__).resolve().parents[2] / "data" / "progress_records.json",
@@ -19,13 +21,70 @@ progress_state: dict[str, list[Record] | bool | Path] = {
 }
 
 
+def _load_progress_records(db: Path) -> list[Record]:
+	"""Load records from legacy flat JSON or the new per-user bucket structure."""
+	try:
+		if not db.exists():
+			initialize_database(db)
+			return []
+
+		raw_data = db.read_text(encoding="utf-8").strip()
+		if not raw_data:
+			return []
+
+		loaded_data = loads(raw_data)
+		if isinstance(loaded_data, list):
+			if loaded_data and all(isinstance(item, dict) and "records" in item for item in loaded_data):
+				records: list[Record] = []
+				for bucket in loaded_data:
+					user_id = bucket.get("user_id", 0)
+					for item in bucket.get("records", []):
+						if not isinstance(item, dict):
+							continue
+						merged = dict(item)
+						merged.setdefault("user_id", user_id)
+						records.append(parse_progress_entry(merged))
+				return records
+
+			return [parse_progress_entry(item) for item in loaded_data if isinstance(item, dict)]
+
+		if isinstance(loaded_data, dict):
+			records = []
+			for user_key, bucket in loaded_data.items():
+				if not isinstance(bucket, dict):
+					continue
+				bucket_user_id = bucket.get("user_id", user_key)
+				for item in bucket.get("records", []):
+					if not isinstance(item, dict):
+						continue
+					merged = dict(item)
+					merged.setdefault("user_id", bucket_user_id)
+					records.append(parse_progress_entry(merged))
+			return records
+
+		return []
+	except (OSError, JSONDecodeError, ValueError, TypeError) as error:
+		print(f"[Warning] Could not load progress records: {error}")
+		return []
+
+
+def _group_records_by_user(records: list[Record]) -> list[UserBucket]:
+	"""Convert flat in-memory records into the persisted per-user bucket format."""
+	buckets: dict[int, UserBucket] = {}
+	for record in records:
+		user_id = int(record.get("user_id", 0))
+		bucket = buckets.setdefault(user_id, {"user_id": user_id, "records": []})
+		bucket["records"].append(serialize_progress_entry(record))
+	return [buckets[user_id] for user_id in sorted(buckets)]
+
+
 def initialize_service(db_path: Path | None = None) -> None:
 	"""Prepare JSON storage and load records into memory once."""
 	if db_path is not None:
 		progress_state["db"] = db_path
 	db: Path = cast(Path, progress_state["db"])
 	initialize_database(db)
-	progress_state["records"] = [parse_progress_entry(record) for record in load_records(db)]
+	progress_state["records"] = _load_progress_records(db)
 	progress_state["initialized"] = True
 
 
@@ -39,7 +98,7 @@ def list_records() -> list[Record]:
 	"""Return all records for the current user."""
 	ensure_initialized()
 	records: list[Record] = cast(list[Record], progress_state["records"])
-	user_id = current_user_id() or 0
+	user_id = auth_service.current_user_id() or 0
 	return [record.copy() for record in records if record.get("user_id") == user_id]
 
 
@@ -56,19 +115,16 @@ def create_record(payload: Record) -> Record:
 	ensure_initialized()
 	records = cast(list[Record], progress_state["records"])
 	record_id = max((int(record["record_id"]) for record in records), default=0) + 1
-	user_id = payload.get("user_id", current_user_id() or 0)
+	user_id = int(payload.get("user_id", auth_service.current_user_id() or 0))
+
 	record = build_progress_entry(
 		record_id=record_id,
-		user_id= cast(int, user_id),
-		client_name=cast(str, payload["client_name"]),
-		email=cast(str, payload["email"]),
-		phone=cast(str, payload["phone"]),
+		user_id=user_id,
 		record_date=cast(str, payload["record_date"]),
 		weight_kg=cast(float, payload["weight_kg"]),
 		body_fat_pct=cast(float, payload["body_fat_pct"]),
 		daily_calories=cast(int, payload["daily_calories"]),
-		password=cast(str, payload["password"]),
-		notes=cast(str, payload["notes"]),
+		notes=cast(str, payload.get("notes", "")),
 	)
 	records.append(record)
 	return record.copy()
@@ -169,4 +225,4 @@ def save_state() -> bool:
 	ensure_initialized()
 	db: Path = cast(Path, progress_state["db"])
 	records: list[Record] = cast(list[Record], progress_state["records"])
-	return save_records(db, [serialize_progress_entry(record) for record in records])
+	return save_records(db, _group_records_by_user(records))
