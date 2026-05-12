@@ -12,17 +12,18 @@ from pprint import pprint
 from datetime import datetime
 import sys
 
-sys.path.insert(0, 'src')
-
-from services.auth_service import initialize_auth, register_user, authenticate, current_user
-from services.progress_service import (
+from src.services.auth_service import initialize_auth, register_user, authenticate, current_user
+from src.services.progress_service import (
     initialize_service, create_record, list_records, search_records,
     sort_records, compute_statistics, filter_weight_range, save_state
 )
 
+sys.path.insert(0, 'src')
+
+
 
 def main() -> int:
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     username = f'test_runner_{timestamp}'
     display = 'Test Runner'
     password = 'Runner@123'
