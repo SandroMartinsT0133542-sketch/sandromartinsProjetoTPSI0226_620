@@ -1,18 +1,30 @@
 from tkinter import ttk
-from typing import Callable
+from typing import Any, Callable
+
+from services.progress_service import Record
 
 
 class RecordTable(ttk.Frame):
-    def __init__(self, parent, on_select: Callable[[int], None] | None = None):
+    def __init__(
+        self,
+        parent,
+        on_select: Callable[[int], None] | None = None,
+        on_sort: Callable[[str], None] | None = None,
+    ):
         super().__init__(parent)
         self.on_select = on_select
-        self.tree = ttk.Treeview(self, columns=("id", "date", "weight", "bf", "cal", "notes"), show="headings")
-        self.tree.heading("id", text="ID")
-        self.tree.heading("date", text="Date")
-        self.tree.heading("weight", text="Weight (kg)")
-        self.tree.heading("bf", text="Body Fat (%)")
-        self.tree.heading("cal", text="Calories")
-        self.tree.heading("notes", text="Notes")
+        self.on_sort = on_sort
+        self.columns = (
+            ("id", "record_id", "ID"),
+            ("date", "record_date", "Date"),
+            ("weight", "weight_kg", "Weight (kg)"),
+            ("bf", "body_fat_pct", "Body Fat (%)"),
+            ("cal", "daily_calories", "Calories"),
+            ("notes", "notes", "Notes"),
+        )
+        self.tree = ttk.Treeview(self, columns=tuple(column[0] for column in self.columns), show="headings")
+        for column_name, field_name, title in self.columns:
+            self.tree.heading(column_name, text=title, command=lambda field=field_name: self._on_sort(field))
 
         self.tree.column("id", width=60, anchor="center")
         self.tree.column("date", width=100, anchor="center")
@@ -31,7 +43,11 @@ class RecordTable(ttk.Frame):
 
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
 
-    def load(self, records: list[dict]):
+    def _on_sort(self, field: str):
+        if self.on_sort:
+            self.on_sort(field)
+
+    def load(self, records: list[Record]):
         for r in self.tree.get_children():
             self.tree.delete(r)
 
