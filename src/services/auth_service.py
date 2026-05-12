@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import cast
 
 from data.storage import initialize_database, load_records, save_records
-from src.utils.users import hash_password
+from utils.users import hash_password
 from utils import generate_user
 
 Record = dict[str, str | int | float]

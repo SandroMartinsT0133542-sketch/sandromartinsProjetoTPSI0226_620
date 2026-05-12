@@ -15,11 +15,8 @@ def main() -> None:
 		# Import GUI pieces only when attempting to start the graphical mode.
 		from gui.app import run_gui
 		run_gui()
-	except Exception:
-		# Any import error or GUI runtime error falls back to the CLI.
-		from cli.app import run_app as run_cli
-		run_cli()
-
+	except Exception as err:
+		print(f"Error: {err}")
 
 if __name__ == "__main__":
 	main()
