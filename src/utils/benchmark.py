@@ -24,7 +24,7 @@ def run_benchmarks(algorithm: str, dataSize: int, callback: Callable[[], list[di
 
     end_time = time.time()
     time_diff = end_time - start_time
-    elapsed_time = time.strftime("%H:%M:%S", time.gmtime(time_diff))
+    elapsed_time = round(time_diff, 4)  # Round to 4 decimal places for better readability
 
     results = {
         "algorithm": algorithm,
