@@ -213,3 +213,8 @@ __marimo__/
 !.github/scripts/
 .github/scripts/__pycache__/
 .github/scripts/**/*.pyc
+
+
+# JSON FILES FROM benchmarks and data files above src, which are not needed in version control
+benchmarks/*.json
+data/*.json
