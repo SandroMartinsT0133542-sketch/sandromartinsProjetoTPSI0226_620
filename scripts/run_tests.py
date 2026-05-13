@@ -11,14 +11,17 @@ record creation, searches, sorts, statistics, filtering and saves state.
 from pprint import pprint
 from datetime import datetime
 import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from src.services.auth_service import initialize_auth, register_user, authenticate, current_user
 from src.services.progress_service import (
     initialize_service, create_record, list_records, search_records,
     sort_records, compute_statistics, filter_weight_range, save_state
 )
-
-sys.path.insert(0, 'src')
 
 
 

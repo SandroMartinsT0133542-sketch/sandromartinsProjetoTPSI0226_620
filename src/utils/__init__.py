@@ -8,9 +8,11 @@ from .validators import (
 	validate_phone,
 	validate_number,
 )
-
 from .users import generate_user, hash_password
+from .benchmark import run_benchmarks
+
 __all__ = [
+  "run_benchmarks",
 	"hash_password",
   "generate_user",
 	"validate_non_empty",

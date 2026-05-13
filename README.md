@@ -1,144 +1,86 @@
 # Fitness Management System (GUI + JSON)
 
-Python school project for managing fitness progress records through a small Tkinter interface with JSON persistence.
+Small Python project providing a Tkinter GUI and a fallback CLI for managing fitness progress records stored in JSON files.
 
-Default login: `admin` / `Admin@2026`
+Default login: `admin` / `Admin@2026` (present for demo; change before production)
 
-You can also create a new account from the GUI or the fallback CLI before signing in.
+## Quick start
 
-## Current Features
-
-- Create, list, search, update, and delete records.
-- Manual search algorithms: linear and binary.
-- Manual sorting algorithms: bubble and insertion.
-- Statistics: count, averages, min/max, and total calories.
-- Weight-range filtering.
-- Regex and numeric validation for user input.
-- Sign up and sign in with a second JSON file for users.
-- Login system backed by a second JSON file.
-- Save on demand and save prompt on exit.
-- Sample-data loader for quick demo/testing.
-- Small GUI for day-to-day use.
-
-## Project Structure
-
-- [src/main.py](src/main.py): application entry point.
-- [src/gui/app.py](src/gui/app.py): Tkinter interface.
-- [src/cli/app.py](src/cli/app.py): interactive menu and prompts.
-- [src/services/auth_service.py](src/services/auth_service.py): JSON-backed login handling.
-- [src/services/progress_service.py](src/services/progress_service.py): CRUD, search, sorting, statistics, filtering, and sample records.
-- [src/data/storage.py](src/data/storage.py): JSON storage setup and persistence.
-- [src/models/progress_entry.py](src/models/progress_entry.py): record normalization helpers.
-- [src/algorithms/searching.py](src/algorithms/searching.py): manual search algorithms.
-- [src/algorithms/sorting.py](src/algorithms/sorting.py): manual sorting algorithms.
-- [src/utils/validators.py](src/utils/validators.py): validation helpers.
-
-## How To Run
-
-1. Activate the virtual environment.
+1. Create and activate the virtual environment (Windows PowerShell):
 
 ```powershell
+python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-2. Start the application.
+2. Install dependencies (if needed):
+
+```powershell
+pip install -r requirements.txt
+```
+
+3. Run the application (GUI opens by default):
 
 ```powershell
 python src/main.py
 ```
 
-The GUI opens by default. If Tkinter cannot start in your environment, the app falls back to the CLI.
+If Tkinter is unavailable the application will fall back to a CLI alternative.
 
-## Automated PR Review
+## Documentation
 
-- The repository now includes `.github/workflows/pr-review.yml`.
-- It runs on pull requests when they are opened, updated, reopened, or marked ready for review.
-- The workflow performs a Python syntax check, runs `unittest` discovery when a `tests/` directory exists, and applies a small heuristic review to changed files.
-- It posts one sticky bot comment on the pull request and updates that comment on later pushes to avoid spam.
-- To make this check mandatory before merge, enable branch protection in GitHub and require the `PR Review Automation / review` status check.
-- The workflow uses `PYTHONPATH=src` because the project imports modules from the `src` directory root.
+Additional documentation files:
 
-## Demo Data
+- **[OPERATORS.md](OPERATORS.md)** — Search and filter operators (equals, like, greater than, between, etc.)
+- **[scripts/scripts.md](scripts/scripts.md)** — Utility scripts documentation, including `populate.py` for seeding test data
 
-Use menu option `10` in the CLI to load three sample records into the JSON store and save them immediately. This is useful for fast smoke tests and grading demos.
+## Project layout
+
+- `src/main.py` — application entry point.
+- `src/gui/app.py`, `src/gui/login_view.py`, `src/gui/main_view.py`, `src/gui/add_record_dialog.py`, `src/gui/record_table.py` — GUI code and dialogs.
+- `src/algorithms/searching.py` — manual search algorithms (linear, binary).
+- `src/algorithms/sorting.py` — manual sorting algorithms (bubble, insertion).
+- `src/services/auth_service.py` — user sign up / sign in (JSON-backed).
+- `src/services/progress_service.py` — CRUD, sorting, searching, statistics and filtering.
+- `src/models/progress_entry.py` — data model and normalization helpers.
+- `src/data/storage.py` — persistence helpers for JSON files.
+- `src/utils/validators.py`, `src/utils/users.py` — validation and helper utilities.
+- `data/progress_records.json`, `data/users.json` — default JSON stores (sample/demo data).
+- `scripts/run_tests.py` — convenience script to run the test suite.
+- `tests/` — place for unit tests (if present).
 
 ## Persistence
 
-- Database file: `data/progress_records.json`
-- User file: `data/users.json`
-- Records are loaded at startup.
-- Changes can be saved from the menu.
-- Exiting asks whether to save before closing.
+- Records file: `data/progress_records.json`
+- Users file: `data/users.json`
 
-## Requirements Checklist
+Records and users are read at startup. The UI and services provide explicit save operations and may prompt to save on exit.
 
-### Main Entity
+## Running tests
 
-- [done] Use one main fitness entity with 5+ attributes.
-- [done] Generate a unique ID automatically for each new record.
+Run the included test runner (if you use the provided virtual environment):
 
-### CRUD Flow
+```powershell
+python scripts/run_tests.py
+```
 
-- [done] Create new records from the CLI.
-- [done] List all stored records.
-- [done] Search records by multiple fields.
-- [done] Update existing records with validation.
-- [done] Delete records with confirmation.
+Or use unittest discovery directly:
 
-### Search and Sorting
+```powershell
+python -m unittest discover -s tests
+```
 
-- [done] Implement linear search manually.
-- [done] Implement binary search manually.
-- [done] Implement bubble sort manually.
-- [done] Implement insertion sort manually.
-- [done] Allow sorting by selected field.
-- [done] Allow ascending and descending order.
+## Features
 
-### Statistics and Filters
+- CRUD for fitness progress records with validation.
+- Manual implementations of linear/binary search and bubble/insertion/merge sort.
+- Filtering and basic statistics (count, averages, min/max, totals).
+- JSON-backed persistence for records and users.
+- Tkinter GUI with dialogs for adding/updating records; CLI fallback available.
 
-- [done] Show record count.
-- [done] Show average weight.
-- [done] Show average body fat.
-- [done] Show minimum and maximum weight.
-- [done] Show total calories.
-- [done] Filter records by weight range.
+## Notes and TODOs
 
-### Validation
+- [TODO] Add unit tests for all CRUD, search/sort and validation flows.
+- [TODO] Improve CLI output formatting for wide terminals.
 
-- [done] Validate email format with regex.
-- [done] Validate phone format with regex.
-- [done] Validate date format with regex.
-- [done] Validate password strength with regex.
-- [done] Validate numeric fields with range checks.
-- [done] Show specific error messages for invalid input.
-
-### Persistence
-
-- [done] Persist data in JSON.
-- [done] Support sign up and sign in.
-- [done] Store users in a second JSON file.
-- [done] Load records at startup.
-- [done] Save records on demand.
-- [done] Prompt to save before exiting.
-- [done] Handle database read/write errors safely.
-
-### Architecture and Code Quality
-
-- [done] Split the project into multiple modules.
-- [done] Keep CLI logic separate from service logic.
-- [done] Keep search and sort algorithms in dedicated modules.
-- [done] Use try/except around persistence boundaries.
-- [done] Keep helper functions small and single-purpose.
-
-### Demo and Usability
-
-- [done] Provide a sample-data loader for quick demos.
-- [done] Make the app runnable from the main entry point.
-- [done] Keep the README aligned with the current implementation.
-
-### Still Open
-
-- [TODO] Add automated tests for CRUD, search, sorting, and validation flows.
-- [TODO] Add a database reset option for quick clean demos.
-- [TODO] Improve output formatting for long notes and wider terminal screens.
-- [TODO] Add import/export support if the assignment later requires file exchange.
+If you'd like, I can run the tests now or open a PR with this README change.

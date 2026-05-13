@@ -32,7 +32,7 @@ class MainView(ttk.Frame):
         }
         self.search_field_var = StringVar(value="Notes")
         self.sort_algo_var = StringVar(value="insertion")
-        self._sort_algorithms = ["bubble", "insertion", "quick", "merge"]
+        self._sort_algorithms = ["bubble", "insertion", "merge"]
         self.search_operator_var = StringVar(value="equals")
         self._operator_options = ["equals", "like", "greater", "less", "between", "any"]
 
