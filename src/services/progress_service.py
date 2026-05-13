@@ -8,11 +8,13 @@ try:
 	from store import initialize_database, load_records, save_records
 	from models import build_progress_entry, parse_progress_entry, serialize_progress_entry
 	from services.auth_service import current_user_id
+	from utils.benchmark import run_benchmarks
 except ModuleNotFoundError:
 	from src.algorithms import binary_search, linear_search, bubble_sort, insertion_sort, merge_sort
 	from src.store import initialize_database, load_records, save_records
 	from src.models import build_progress_entry, parse_progress_entry, serialize_progress_entry
 	from src.services.auth_service import current_user_id
+	from src.utils.benchmark import run_benchmarks
 
 Record = dict[str, Any]
 
@@ -179,11 +181,12 @@ def sort_records(
 	sort_field = _resolve_field_name(field)
 	sort_space = [record.copy() for record in records] if records is not None else list_records()
 	if algorithm == "bubble":
-		return bubble_sort(sort_space, field=sort_field, descending=descending)
+
+		return run_benchmarks("bubble", len(sort_space), lambda: bubble_sort(sort_space, field=sort_field, descending=descending), search_key=sort_field)
 	if algorithm == "insertion":
-		return insertion_sort(sort_space, field=sort_field, descending=descending)
+		return run_benchmarks("insertion", len(sort_space), lambda: insertion_sort(sort_space, field=sort_field, descending=descending), search_key=sort_field)
 	if algorithm == "merge":
-		return merge_sort(sort_space, field=sort_field, descending=descending)
+		return run_benchmarks("merge", len(sort_space), lambda: merge_sort(sort_space, field=sort_field, descending=descending), search_key=sort_field)
 	raise ValueError("Unknown sorting algorithm.")
 
 
