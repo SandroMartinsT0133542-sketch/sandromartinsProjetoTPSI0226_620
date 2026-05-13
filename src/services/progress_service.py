@@ -3,12 +3,16 @@
 from pathlib import Path
 from typing import Any, cast
 
-from algorithms.searching import binary_search, linear_search
-from algorithms.sorting import bubble_sort, insertion_sort, quick_sort, merge_sort
-
-from data.storage import initialize_database, load_records, save_records
-from models.progress_entry import build_progress_entry, parse_progress_entry, serialize_progress_entry
-from services.auth_service import current_user_id
+try:
+	from algorithms import binary_search, linear_search, bubble_sort, insertion_sort, merge_sort
+	from store import initialize_database, load_records, save_records
+	from models import build_progress_entry, parse_progress_entry, serialize_progress_entry
+	from services.auth_service import current_user_id
+except ModuleNotFoundError:
+	from src.algorithms import binary_search, linear_search, bubble_sort, insertion_sort, merge_sort
+	from src.store import initialize_database, load_records, save_records
+	from src.models import build_progress_entry, parse_progress_entry, serialize_progress_entry
+	from src.services.auth_service import current_user_id
 
 Record = dict[str, Any]
 
@@ -160,8 +164,8 @@ def search_records(
 		if operator in ("like", "any"):
 			return linear_search(search_space, field=search_field, target=target, operator=operator, target_max=target_max)
 		ordered_records = insertion_sort(search_space, field=search_field, descending=False)
-		return binary_search(ordered_records, field=search_field, target=target, operator=operator, target_max=target_max)
-	return linear_search(search_space, field=search_field, target=target, operator=operator, target_max=target_max)
+		return binary_search(ordered_records, field=search_field, target=target, operator=operator, target_max=target_max) # type: ignore
+	return linear_search(search_space, field=search_field, target=target, operator=operator, target_max=target_max) # type: ignore
 
 
 def sort_records(
@@ -178,8 +182,6 @@ def sort_records(
 		return bubble_sort(sort_space, field=sort_field, descending=descending)
 	if algorithm == "insertion":
 		return insertion_sort(sort_space, field=sort_field, descending=descending)
-	if algorithm == "quick":
-		return quick_sort(sort_space, field=sort_field, descending=descending)
 	if algorithm == "merge":
 		return merge_sort(sort_space, field=sort_field, descending=descending)
 	raise ValueError("Unknown sorting algorithm.")

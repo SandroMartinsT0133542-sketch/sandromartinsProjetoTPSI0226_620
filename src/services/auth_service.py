@@ -3,9 +3,12 @@
 from pathlib import Path
 from typing import cast
 
-from data.storage import initialize_database, load_records, save_records
-from utils.users import hash_password
-from utils import generate_user
+try:
+	from store import initialize_database, load_records, save_records
+	from utils import generate_user, hash_password
+except ModuleNotFoundError:
+	from src.store import initialize_database, load_records, save_records
+	from src.utils import generate_user, hash_password
 
 Record = dict[str, str | int | float]
 
@@ -33,7 +36,7 @@ def initialize_auth(db_path: Path | None = None) -> None:
 				"display_name": "Administrator",
 				"email": "admin@fitness.local",
 				"phone": "+351900000000",
-				"password_hash": hash_password("Admin@2026"),
+				"password_hash": hash_password("admin"),
 			},
 		]
 		save_users()
@@ -59,31 +62,43 @@ def register_user(
 		initialize_auth()
 		users = cast(list[Record], auth_state["users"])
 
-	user = generate_user(
-		username.strip(), 
-		display_name.strip(), 
-		email.strip(), 
-		phone.strip(), 
-		password.strip())
+	clean_username = username.strip()
+	clean_display = display_name.strip()
+	clean_password = password.strip()
+	clean_email = email.strip() if email.strip() else f"{clean_username}@fitness.local"
+	clean_phone = phone.strip() if phone.strip() else "+351900000000"
 
-	
-	if not user['username'] or not user['display_name'] or not user['email'] or not user['phone'] or not user['password_hash']:
+	user = generate_user(
+		clean_username,
+		clean_display,
+		clean_email,
+		clean_phone,
+		clean_password,
+	)
+
+	if not user["username"] or not user["display_name"] or not user["email"] or not user["phone"] or not user["password_hash"]:
 		return False, "All fields are required."
-	if not email:
-		email = f"{username}@fitness.local"
-	if not phone:
-		phone = "+351900000000"
+
+	max_user_id = 0
+	for existing_user in users:
+		try:
+			existing_id = int(existing_user.get("user_id", 0))
+		except (TypeError, ValueError):
+			existing_id = 0
+		if existing_id > max_user_id:
+			max_user_id = existing_id
 
 	for existing_user in users:
-		if existing_user.get("username") == user['username']:
+		if existing_user.get("username") == user["username"]:
 			return False, "That username is already taken."
-		elif existing_user.get("email") == user['email']:
+		elif existing_user.get("email") == user["email"]:
 			return False, "That email is already registered."
-		elif existing_user.get("phone") == user['phone']:
+		elif existing_user.get("phone") == user["phone"]:
 			return False, "That phone number is already registered."
-		elif existing_user.get("display_name") == user['display_name']:
+		elif existing_user.get("display_name") == user["display_name"]:
 			return False, "That display name is already taken."
-	
+
+	user["user_id"] = max_user_id + 1
 	users.append(cast(Record, user))
 
 	if save_users():
