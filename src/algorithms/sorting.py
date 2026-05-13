@@ -118,68 +118,6 @@ def insertion_sort(records: list[dict[str, Any]], field: str, descending: bool =
 		ordered[position + 1] = current
 
 	return ordered
-
-
-def quick_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
-	"""Sort records using quick sort.
-
-	Args:
-		records: List of records (dicts) to sort.
-		field: Field name to sort by.
-		descending: If True, sort in descending order.
-
-	Returns:
-		A new list with records sorted by the specified field.
-	"""
-	ordered = [record.copy() for record in records]
-	
-	def _partition(arr: list[dict[str, Any]], low: int, high: int) -> int:
-		"""Partition around pivot using median-of-three for better performance."""
-		if high - low > 2:
-			# Median-of-three pivot selection
-			first = sort_key(arr[low], field)
-			mid = sort_key(arr[(low + high) // 2], field)
-			last = sort_key(arr[high], field)
-			
-			if first > mid:
-				first, mid = mid, first
-			if mid > last:
-				mid, last = last, mid
-			if first > mid:
-				mid = first
-			
-			pivot_idx = (low + high) // 2 if mid == sort_key(arr[(low + high) // 2], field) else (low if mid == sort_key(arr[low], field) else high)
-		else:
-			pivot_idx = low
-		
-		# Move pivot to end
-		arr[pivot_idx], arr[high] = arr[high], arr[pivot_idx]
-		pivot = sort_key(arr[high], field)
-		
-		i = low
-		for j in range(low, high):
-			current = sort_key(arr[j], field)
-			should_left = current < pivot if not descending else current > pivot
-			if should_left:
-				arr[i], arr[j] = arr[j], arr[i]
-				i += 1
-		
-		arr[i], arr[high] = arr[high], arr[i]
-		return i
-	
-	def _quick_sort_impl(arr: list[dict[str, Any]], low: int, high: int) -> None:
-		"""Recursive quick sort implementation."""
-		if low < high:
-			partition_idx = _partition(arr, low, high)
-			_quick_sort_impl(arr, low, partition_idx - 1)
-			_quick_sort_impl(arr, partition_idx + 1, high)
-	
-	if len(ordered) > 1:
-		_quick_sort_impl(ordered, 0, len(ordered) - 1)
-	
-	return ordered
-
-
 def merge_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records using merge sort.
 

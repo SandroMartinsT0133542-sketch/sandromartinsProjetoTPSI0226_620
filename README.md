@@ -27,6 +27,13 @@ python src/main.py
 
 If Tkinter is unavailable the application will fall back to a CLI alternative.
 
+## Documentation
+
+Additional documentation files:
+
+- **[OPERATORS.md](OPERATORS.md)** — Search and filter operators (equals, like, greater than, between, etc.)
+- **[scripts/scripts.md](scripts/scripts.md)** — Utility scripts documentation, including `populate.py` for seeding test data
+
 ## Project layout
 
 - `src/main.py` — application entry point.
@@ -66,7 +73,7 @@ python -m unittest discover -s tests
 ## Features
 
 - CRUD for fitness progress records with validation.
-- Manual implementations of linear/binary search and bubble/insertion sort.
+- Manual implementations of linear/binary search and bubble/insertion/merge sort.
 - Filtering and basic statistics (count, averages, min/max, totals).
 - JSON-backed persistence for records and users.
 - Tkinter GUI with dialogs for adding/updating records; CLI fallback available.
@@ -74,7 +81,6 @@ python -m unittest discover -s tests
 ## Notes and TODOs
 
 - [TODO] Add unit tests for all CRUD, search/sort and validation flows.
-- [TODO] Add a quick database reset/seed command for demos.
 - [TODO] Improve CLI output formatting for wide terminals.
 
 If you'd like, I can run the tests now or open a PR with this README change.
