@@ -2,7 +2,7 @@
 
 Small Python project providing a Tkinter GUI and a fallback CLI for managing fitness progress records stored in JSON files.
 
-Default login: `admin` / `Admin@2026` (present for demo; change before production)
+Default login: `admin` / `admin` (created automatically on first run if no users exist)
 
 ## Quick start
 
@@ -32,14 +32,20 @@ If Tkinter is unavailable the application will fall back to a CLI alternative.
 Additional documentation files:
 
 - **[OPERATORS.md](OPERATORS.md)** — Search and filter operators (equals, like, greater than, between, etc.)
-- **[scripts/scripts.md](scripts/scripts.md)** — Utility scripts documentation, including `populate.py` for seeding test data
+- **[benchmarks/README.md](benchmarks/README.md)** — Benchmark result format, generation workflow, and analysis notes
+- **[scripts/README.md](scripts/README.md)** — Utility scripts documentation, including `populate.py` for seeding test data
+- **[src/utils/README.md](src/utils/README.md)** — Utility functions documentation (validators, user management, benchmarking)
+- **[src/algorithms/README.md](src/algorithms/README.md)** — Manual implementations of sorting and searching algorithms with workflows and examples
+- **[src/models/README.md](src/models/README.md)** — Record structure, parsing, serialization, and data flow
+- **[src/store/README.md](src/store/README.md)** — JSON storage management, including file structure and data handling
+- **[src/services/README.md](src/services/README.md)** — Business logic and service layer documentation, including record management, filtering, and statistics calculations
 
 ## Project layout
 
-`src/algorithms/sorting.py` — manual sorting algorithms (bubble, insertion, merge).
+`src/algorithms/sorting.py` and `src/algorithms/searching.py` — manual sort/search algorithms.
+`src/models/progress_entry.py` — record normalization and serialization helpers.
 `src/store/storage.py` — persistence helpers for JSON files.
-`src/utils/validators.py`, `src/utils/users.py` — validation and helper utilities.
-`src/utils/benchmark.py` — performance benchmarking for sorting algorithms (tracks algorithm, data size, execution time, and search key).
+`src/utils/validators.py`, `src/utils/users.py`, `src/utils/benchmark.py` — validation, helper utilities, and performance tracking.
 `benchmarks/` — benchmark results stored per algorithm as JSON files.
 
 ## Persistence
@@ -49,12 +55,12 @@ Additional documentation files:
 
 ## Benchmarking
 
-- Benchmark results are stored in `benchmarks/` directory, organized by algorithm (e.g., `benchmarks/bubble_sort.json`).
+- Benchmark results are stored in `benchmarks/` directory, organized by algorithm (e.g., `benchmarks/bubble_results.json`).
 - Each benchmark entry includes:
-  - `algorithm`: Name of the sorting algorithm (e.g., "bubble_sort")
+  - `algorithm`: Name of the sorting algorithm (e.g., "bubble")
   - `data_size`: Number of records sorted
   - `elapsed_time`: Time taken to sort (in seconds, rounded to 4 decimal places)
-  - `search_key`: The key used for sorting (e.g., "weight", "body_fat")
+  - `search_key`: The key used for sorting (e.g., "weight_kg", "body_fat_pct")
 
 Records and users are read at startup. The UI and services provide explicit save operations and may prompt to save on exit.
 
