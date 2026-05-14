@@ -38,7 +38,7 @@ Additional documentation files:
 - **[src/algorithms/README.md](src/algorithms/README.md)** — Manual implementations of sorting and searching algorithms with workflows and examples
 - **[src/models/README.md](src/models/README.md)** — Record structure, parsing, serialization, and data flow
 - **[src/store/README.md](src/store/README.md)** — JSON storage management, including file structure and data handling
-- **[src/services/README.md](src/services/README.md)** — Business logic and service layer documentation, including record management, filtering, and statistics calculations
+- **[src/services/README.md](src/sersvices/README.md)** — Business logic and service layer documentation, including record management, filtering, and statistics calculations
 
 ## Project layout
 
