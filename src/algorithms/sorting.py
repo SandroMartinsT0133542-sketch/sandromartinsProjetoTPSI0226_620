@@ -29,7 +29,6 @@ def to_numeric(value: object) -> float | None:
 
 def sort_key(record: dict[str, Any], field: str) -> tuple[int, float | str]:
 	"""Normalize one record value into a deterministic key.
-
 	Returns (priority, normalized_value) where numbers come first, then
 	strings (case-folded), and None last.
 	"""
@@ -55,6 +54,12 @@ def should_swap(
 	return left < right if descending else left > right
 
 
+
+def _copy_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+	"""Return shallow copies of the provided records."""
+	return [record.copy() for record in records]
+
+
 def bubble_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records using bubble sort.
 
@@ -66,12 +71,11 @@ def bubble_sort(records: list[dict[str, Any]], field: str, descending: bool = Fa
 	Returns:
 		A new list with records sorted by the specified field.
 	"""
-	ordered = [record.copy() for record in records]
+	ordered = _copy_records(records)
 	total = len(ordered)
 	if total < 2:
 		return ordered
 
-	# Bubble sort with early termination optimization
 	for end in range(total - 1, 0, -1):
 		swapped = False
 		for index in range(end):
@@ -80,7 +84,6 @@ def bubble_sort(records: list[dict[str, Any]], field: str, descending: bool = Fa
 			if should_swap(left_key, right_key, descending):
 				ordered[index], ordered[index + 1] = ordered[index + 1], ordered[index]
 				swapped = True
-		# If no swaps occurred, data is sorted
 		if not swapped:
 			break
 	return ordered
@@ -97,18 +100,16 @@ def insertion_sort(records: list[dict[str, Any]], field: str, descending: bool =
 	Returns:
 		A new list with records sorted by the specified field.
 	"""
-	ordered = [record.copy() for record in records]
+	ordered = _copy_records(records)
 	total = len(ordered)
 	if total < 2:
 		return ordered
 
-	# Insert each element into its correct position among sorted elements
 	for index in range(1, total):
 		current = ordered[index]
 		current_key = sort_key(current, field)
 		position = index - 1
 
-		# Shift larger/smaller elements right to make space
 		while position >= 0:
 			position_key = sort_key(ordered[position], field)
 			if not should_swap(position_key, current_key, descending):
@@ -118,6 +119,49 @@ def insertion_sort(records: list[dict[str, Any]], field: str, descending: bool =
 		ordered[position + 1] = current
 
 	return ordered
+
+
+def _merge_sorted_lists(
+	left: list[dict[str, Any]],
+	right: list[dict[str, Any]],
+	field: str,
+	descending: bool,
+) -> list[dict[str, Any]]:
+	"""Merge two sorted lists into one sorted result."""
+	result: list[dict[str, Any]] = []
+	i = 0
+	j = 0
+
+	while i < len(left) and j < len(right):
+		left_key = sort_key(left[i], field)
+		right_key = sort_key(right[j], field)
+		if should_swap(left_key, right_key, descending):
+			result.append(right[j])
+			j += 1
+		else:
+			result.append(left[i])
+			i += 1
+
+	result.extend(left[i:])
+	result.extend(right[j:])
+	return result
+
+
+def _merge_sort_recursive(
+	records: list[dict[str, Any]],
+	field: str,
+	descending: bool,
+) -> list[dict[str, Any]]:
+	"""Recursively split and merge records until they are sorted."""
+	if len(records) <= 1:
+		return records
+
+	middle = len(records) // 2
+	left = _merge_sort_recursive(records[:middle], field, descending)
+	right = _merge_sort_recursive(records[middle:], field, descending)
+	return _merge_sorted_lists(left, right, field, descending)
+
+
 def merge_sort(records: list[dict[str, Any]], field: str, descending: bool = False) -> list[dict[str, Any]]:
 	"""Sort records using merge sort.
 
@@ -129,38 +173,6 @@ def merge_sort(records: list[dict[str, Any]], field: str, descending: bool = Fal
 	Returns:
 		A new list with records sorted by the specified field.
 	"""
-	ordered = [record.copy() for record in records]
-	
-	def _merge(left: list[dict[str, Any]], right: list[dict[str, Any]]) -> list[dict[str, Any]]:
-		"""Merge two sorted lists into one."""
-		result: list[dict[str, Any]] = []
-		i = j = 0
-		
-		while i < len(left) and j < len(right):
-			left_key = sort_key(left[i], field)
-			right_key = sort_key(right[j], field)
-			
-			if should_swap(left_key, right_key, descending):
-				result.append(right[j])
-				j += 1
-			else:
-				result.append(left[i])
-				i += 1
-		
-		# Add remaining elements
-		result.extend(left[i:])
-		result.extend(right[j:])
-		return result
-	
-	def _merge_sort_impl(arr: list[dict[str, Any]]) -> list[dict[str, Any]]:
-		"""Recursive merge sort implementation."""
-		if len(arr) <= 1:
-			return arr
-		
-		mid = len(arr) // 2
-		left = _merge_sort_impl(arr[:mid])
-		right = _merge_sort_impl(arr[mid:])
-		return _merge(left, right)
-	
-	return _merge_sort_impl(ordered)
+	ordered = _copy_records(records)
+	return _merge_sort_recursive(ordered, field, descending)
 

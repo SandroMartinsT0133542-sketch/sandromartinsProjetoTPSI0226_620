@@ -1,12 +1,4 @@
-"""
-Benchmarking utility for measuring the performance of algorithms.
-This module provides a function `run_benchmarks` that can be used to execute a given algorithm, measure its execution time, and save the results in a JSON file for later analysis. The results include the algorithm name, data size, elapsed time, and an optional search key.
-The `run_benchmarks` function takes the following parameters:
-- `algorithm`: A string representing the name of the algorithm being benchmarked.
-- `dataSize`: An integer representing the size of the data being processed by the algorithm.
-- `callback`: A callable that executes the algorithm and returns its result. This allows for flexibility
 
-"""
 
 import json
 import time
@@ -15,16 +7,30 @@ import os
 from typing import Callable, Any
 
 def run_benchmarks(algorithm: str, dataSize: int, callback: Callable[[], list[dict[str, Any]]], search_key: str | None = None) -> list[dict[str, Any]]:
-    """Run the benchmarks for the specified algorithm and data size."""
+    """
+    Benchmarking utility for measuring the performance of algorithms.
+    This module provides a function `run_benchmarks` that can be used to execute a given algorithm, measure its execution time, and save the results in a JSON file for later analysis. The results include the algorithm name, data size, elapsed time, and an optional search key.
+    The `run_benchmarks` function takes the following parameters:
+    - `algorithm`: A string representing the name of the algorithm being benchmarked.
+    - `dataSize`: An integer representing the size of the data being processed by the algorithm.
+    - `callback`: A callable that executes the algorithm and returns its result. This allows for flexibility
+    - `search_key`: An optional string that can be used to specify a search key or parameter relevant to the algorithm being benchmarked.
+    The function measures the execution time of the provided callback, saves the results in a JSON file
+    """
     results: dict[str, str | float | int | None] = {}
     start_time = time.time()
     print(f"Running benchmark for {algorithm} with data size {dataSize}...")
     print(f"Start time: {start_time}")
-    result = callback()  # Call the provided callback to execute the algorithm
+    if callback is not None:
+        # Call the provided callback to execute the algorithm
+        result = callback()
+    else:
+        raise ValueError("Callback function is required")
 
     end_time = time.time()
     time_diff = end_time - start_time
-    elapsed_time = round(time_diff, 4)  # Round to 4 decimal places for better readability
+    # Round to 4 decimal places for better readability
+    elapsed_time = round(time_diff, 4)
 
     results = {
         "algorithm": algorithm,
