@@ -99,6 +99,147 @@ def _matches_operator(record_value: Any, operator: str, target: object, target_m
 	return False
 
 
+def _copy_records(records: list[dict[str, Any]], start: int, end: int) -> list[dict[str, Any]]:
+	"""Return copies of the records within the inclusive index range."""
+	return [records[index].copy() for index in range(start, end + 1)]
+
+
+def _binary_search_equals(records: list[dict[str, Any]], field: str, target: object) -> list[dict[str, Any]]:
+	"""Return all records that match a value exactly."""
+	target_key = search_key(target)
+	low = 0
+	high = len(records) - 1
+	found_index = -1
+
+	while low <= high:
+		middle = (low + high) // 2
+		middle_key = search_key(records[middle].get(field))
+		if middle_key == target_key:
+			found_index = middle
+			break
+		if middle_key < target_key:
+			low = middle + 1
+		else:
+			high = middle - 1
+
+	if found_index < 0:
+		return []
+
+	start = found_index
+	while start > 0 and search_key(records[start - 1].get(field)) == target_key:
+		start -= 1
+
+	end = found_index
+	last_index = len(records) - 1
+	while end < last_index and search_key(records[end + 1].get(field)) == target_key:
+		end += 1
+
+	return _copy_records(records, start, end)
+
+
+def _binary_search_greater(records: list[dict[str, Any]], field: str, target: object) -> list[dict[str, Any]]:
+	"""Return all records whose numeric value is greater than the target."""
+	target_num = to_numeric(target)
+	if target_num is None:
+		return []
+
+	low = 0
+	high = len(records) - 1
+	first_greater_index = len(records)
+
+	while low <= high:
+		middle = (low + high) // 2
+		middle_num = to_numeric(records[middle].get(field))
+		if middle_num is None:
+			low = middle + 1
+			continue
+		if middle_num > target_num:
+			first_greater_index = middle
+			high = middle - 1
+		else:
+			low = middle + 1
+
+	if first_greater_index >= len(records):
+		return []
+	return _copy_records(records, first_greater_index, len(records) - 1)
+
+
+def _binary_search_less(records: list[dict[str, Any]], field: str, target: object) -> list[dict[str, Any]]:
+	"""Return all records whose numeric value is less than the target."""
+	target_num = to_numeric(target)
+	if target_num is None:
+		return []
+
+	low = 0
+	high = len(records) - 1
+	last_less_index = -1
+
+	while low <= high:
+		middle = (low + high) // 2
+		middle_num = to_numeric(records[middle].get(field))
+		if middle_num is None:
+			high = middle - 1
+			continue
+		if middle_num < target_num:
+			last_less_index = middle
+			low = middle + 1
+		else:
+			high = middle - 1
+
+	if last_less_index < 0:
+		return []
+	return _copy_records(records, 0, last_less_index)
+
+
+def _binary_search_between(
+	records: list[dict[str, Any]],
+	field: str,
+	target: object,
+	target_max: object | None,
+) -> list[dict[str, Any]]:
+	"""Return all records whose numeric value falls within the target range."""
+	target_min = to_numeric(target)
+	target_max_num = to_numeric(target_max) if target_max is not None else None
+	if target_min is None or target_max_num is None:
+		return []
+
+	low = 0
+	high = len(records) - 1
+	first_ge_index = len(records)
+
+	while low <= high:
+		middle = (low + high) // 2
+		middle_num = to_numeric(records[middle].get(field))
+		if middle_num is None:
+			low = middle + 1
+			continue
+		if middle_num >= target_min:
+			first_ge_index = middle
+			high = middle - 1
+		else:
+			low = middle + 1
+
+	low = 0
+	high = len(records) - 1
+	last_le_index = -1
+
+	while low <= high:
+		middle = (low + high) // 2
+		middle_num = to_numeric(records[middle].get(field))
+		if middle_num is None:
+			high = middle - 1
+			continue
+		if middle_num <= target_max_num:
+			last_le_index = middle
+			low = middle + 1
+		else:
+			high = middle - 1
+
+	if first_ge_index > last_le_index or first_ge_index >= len(records) or last_le_index < 0:
+		return []
+	return _copy_records(records, first_ge_index, last_le_index)
+
+
 
 def linear_search(
 	records: list[dict[str, Any]],
@@ -151,139 +292,19 @@ def binary_search(
 	if not records:
 		return []
 
-	# For 'like' and 'any', fall back to linear search (binary can't efficiently handle substring/set matching)
 	if operator in ("like", "any"):
 		return linear_search(records, field, target, operator, target_max)
 
 	if operator == "equals":
-		target_key = search_key(target)
-		low = 0
-		high = len(records) - 1
-		found_index = -1
+		return _binary_search_equals(records, field, target)
 
-		# Binary search for any match
-		while low <= high:
-			middle = (low + high) // 2
-			middle_key = search_key(records[middle].get(field))
-			if middle_key == target_key:
-				found_index = middle
-				break
-			if middle_key < target_key:
-				low = middle + 1
-			else:
-				high = middle - 1
+	if operator == "greater":
+		return _binary_search_greater(records, field, target)
 
-		if found_index < 0:
-			return []
+	if operator == "less":
+		return _binary_search_less(records, field, target)
 
-		# Expand left to find the first matching record
-		start = found_index
-		while start > 0 and search_key(records[start - 1].get(field)) == target_key:
-			start -= 1
-
-		# Expand right to find the last matching record
-		end = found_index
-		last_index = len(records) - 1
-		while end < last_index and search_key(records[end + 1].get(field)) == target_key:
-			end += 1
-
-		return [records[index].copy() for index in range(start, end + 1)]
-
-	elif operator == "greater":
-		# Find first record where value > target using binary search
-		target_num = to_numeric(target)
-		if target_num is None:
-			return []
-
-		low = 0
-		high = len(records) - 1
-		first_greater_index = len(records)  # Default: no match
-
-		while low <= high:
-			middle = (low + high) // 2
-			middle_num = to_numeric(records[middle].get(field))
-			if middle_num is None:
-				low = middle + 1
-				continue
-			if middle_num > target_num:
-				first_greater_index = middle
-				high = middle - 1
-			else:
-				low = middle + 1
-
-		if first_greater_index >= len(records):
-			return []
-		return [records[index].copy() for index in range(first_greater_index, len(records))]
-
-	elif operator == "less":
-		# Find last record where value < target using binary search
-		target_num = to_numeric(target)
-		if target_num is None:
-			return []
-
-		low = 0
-		high = len(records) - 1
-		last_less_index = -1
-
-		while low <= high:
-			middle = (low + high) // 2
-			middle_num = to_numeric(records[middle].get(field))
-			if middle_num is None:
-				high = middle - 1
-				continue
-			if middle_num < target_num:
-				last_less_index = middle
-				low = middle + 1
-			else:
-				high = middle - 1
-
-		if last_less_index < 0:
-			return []
-		return [records[index].copy() for index in range(0, last_less_index + 1)]
-
-	elif operator == "between":
-		# Find range of records where target_min <= value <= target_max
-		target_min = to_numeric(target)
-		target_max_num = to_numeric(target_max) if target_max is not None else None
-		if target_min is None or target_max_num is None:
-			return []
-
-		# Find first record >= target_min
-		low = 0
-		high = len(records) - 1
-		first_ge_index = len(records)
-
-		while low <= high:
-			middle = (low + high) // 2
-			middle_num = to_numeric(records[middle].get(field))
-			if middle_num is None:
-				low = middle + 1
-				continue
-			if middle_num >= target_min:
-				first_ge_index = middle
-				high = middle - 1
-			else:
-				low = middle + 1
-
-		# Find last record <= target_max
-		low = 0
-		high = len(records) - 1
-		last_le_index = -1
-
-		while low <= high:
-			middle = (low + high) // 2
-			middle_num = to_numeric(records[middle].get(field))
-			if middle_num is None:
-				high = middle - 1
-				continue
-			if middle_num <= target_max_num:
-				last_le_index = middle
-				low = middle + 1
-			else:
-				high = middle - 1
-
-		if first_ge_index > last_le_index or first_ge_index >= len(records) or last_le_index < 0:
-			return []
-		return [records[index].copy() for index in range(first_ge_index, last_le_index + 1)]
+	if operator == "between":
+		return _binary_search_between(records, field, target, target_max)
 
 	return []
