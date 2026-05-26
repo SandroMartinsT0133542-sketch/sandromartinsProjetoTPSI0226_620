@@ -1,9 +1,48 @@
-"""Record model helpers using dictionaries (no class-based model)."""
+"""Progress entry model and compatibility helper functions."""
 
+from datetime import datetime
 from typing import Any
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+try:
+	from src.models.base import Base
+except ModuleNotFoundError:
+	from models.base import Base
 
 
 Record = dict[str, Any]
+
+
+class ProgressEntry(Base):
+	"""Stores one fitness progress record for a user."""
+
+	__tablename__ = "progress_entries"
+
+	record_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+	user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+	record_date: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+	weight_kg: Mapped[float] = mapped_column(Float, nullable=False)
+	body_fat_pct: Mapped[float] = mapped_column(Float, nullable=False)
+	daily_calories: Mapped[int] = mapped_column(Integer, nullable=False)
+	notes: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+	created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+	updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+	user = relationship("User", back_populates="progress_entries")
+
+	def to_dict(self) -> Record:
+		"""Return dictionary data compatible with search/sort algorithms."""
+		return {
+			"record_id": int(self.record_id),
+			"user_id": int(self.user_id),
+			"record_date": str(self.record_date),
+			"weight_kg": float(self.weight_kg),
+			"body_fat_pct": float(self.body_fat_pct),
+			"daily_calories": int(self.daily_calories),
+			"notes": str(self.notes),
+		}
 
 
 def build_progress_entry(
