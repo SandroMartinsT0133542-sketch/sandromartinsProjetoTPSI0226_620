@@ -1,6 +1,6 @@
-# Fitness Management System (GUI + JSON)
+# Fitness Management System (FastAPI + JSON)
 
-Small Python project providing a Tkinter GUI and a fallback CLI for managing fitness progress records stored in JSON files.
+Small Python project exposing a FastAPI HTTP service for managing fitness progress records stored in JSON files.
 
 Default login: `admin` / `admin` (created automatically on first run if no users exist)
 
@@ -19,13 +19,17 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. Run the application (GUI opens by default):
+3. Run the API service:
 
 ```powershell
-python src/main.py
+uvicorn src.main:app --reload
 ```
 
-If Tkinter is unavailable the application will fall back to a CLI alternative.
+4. Open the interactive API docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
 
 ## Documentation
 
@@ -84,4 +88,4 @@ python -m unittest discover -s tests
 - Manual implementations of linear/binary search and bubble/insertion/merge sort.
 - Filtering and basic statistics (count, averages, min/max, totals).
 - JSON-backed persistence for records and users.
-- Tkinter GUI with dialogs for adding/updating records.
+- FastAPI endpoints for auth, CRUD, searching, sorting, filtering, and statistics.
